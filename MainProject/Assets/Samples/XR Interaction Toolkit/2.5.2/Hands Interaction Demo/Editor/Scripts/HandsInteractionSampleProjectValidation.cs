@@ -19,12 +19,6 @@ namespace UnityEditor.XR.Interaction.Toolkit.Samples.Hands
         const string k_Category = "XR Interaction Toolkit";
         const string k_StarterAssetsSampleName = "Starter Assets";
         const string k_HandVisualizerSampleName = "HandVisualizer";
-        const string k_ProjectValidationSettingsPath = "Project/XR Plug-in Management/Project Validation";
-        const string k_HandsPackageName = "com.unity.xr.hands";
-        const string k_XRIPackageName = "com.unity.xr.interaction.toolkit";
-        const string k_ShaderGraphPackageName = "com.unity.shadergraph";
-        static readonly PackageVersion s_MinimumPackageVersion = new PackageVersion("1.2.1");
-        static readonly PackageVersion s_RecommendedPackageVersion = new PackageVersion("1.3.0");
 
         static readonly BuildTargetGroup[] s_BuildTargetGroups =
             ((BuildTargetGroup[])Enum.GetValues(typeof(BuildTargetGroup))).Distinct().ToArray();
@@ -34,40 +28,29 @@ namespace UnityEditor.XR.Interaction.Toolkit.Samples.Hands
             new BuildValidationRule
             {
                 IsRuleEnabled = () => s_HandsPackageAddRequest == null || s_HandsPackageAddRequest.IsCompleted,
-                Message = $"[{k_SampleDisplayName}] XR Hands ({k_HandsPackageName}) package must be installed or updated to use this sample.",
+                Message = $"[{k_SampleDisplayName}] XR Hands (com.unity.xr.hands) package must be installed to use this sample.",
                 Category = k_Category,
-                CheckPredicate = () => PackageVersionUtility.GetPackageVersion(k_HandsPackageName) >= s_MinimumPackageVersion,
+                CheckPredicate = () => PackageVersionUtility.GetPackageVersion("com.unity.xr.hands") >= new PackageVersion("1.2.1"),
                 FixIt = () =>
                 {
-                    if (s_HandsPackageAddRequest == null || s_HandsPackageAddRequest.IsCompleted)
-                        InstallOrUpdateHands();
+                    s_HandsPackageAddRequest = Client.Add("com.unity.xr.hands");
+                    if (s_HandsPackageAddRequest.Error != null)
+                    {
+                        Debug.LogError($"Package installation error: {s_HandsPackageAddRequest.Error}: {s_HandsPackageAddRequest.Error.message}");
+                    }
                 },
                 FixItAutomatic = true,
                 Error = true,
             },
             new BuildValidationRule
             {
-                IsRuleEnabled = () => s_HandsPackageAddRequest == null || s_HandsPackageAddRequest.IsCompleted,
-                Message = $"[{k_SampleDisplayName}] XR Hands ({k_HandsPackageName}) package must be at version {s_RecommendedPackageVersion} or higher to use the latest sample features.",
+                IsRuleEnabled = () => PackageVersionUtility.GetPackageVersion("com.unity.xr.hands") >= new PackageVersion("1.2.1"),
+                Message = $"[{k_SampleDisplayName}] {k_HandVisualizerSampleName} sample from XR Hands (com.unity.xr.hands) package must be imported or updated to use this sample.",
                 Category = k_Category,
-                CheckPredicate = () => PackageVersionUtility.GetPackageVersion(k_HandsPackageName) >= s_RecommendedPackageVersion,
+                CheckPredicate = () => TryFindSample("com.unity.xr.hands", string.Empty, k_HandVisualizerSampleName, out var sample) && sample.isImported,
                 FixIt = () =>
                 {
-                    if (s_HandsPackageAddRequest == null || s_HandsPackageAddRequest.IsCompleted)
-                        InstallOrUpdateHands();
-                },
-                FixItAutomatic = true,
-                Error = false,
-            },
-            new BuildValidationRule
-            {
-                IsRuleEnabled = () => PackageVersionUtility.GetPackageVersion(k_HandsPackageName) >= s_MinimumPackageVersion,
-                Message = $"[{k_SampleDisplayName}] {k_HandVisualizerSampleName} sample from XR Hands ({k_HandsPackageName}) package must be imported or updated to use this sample.",
-                Category = k_Category,
-                CheckPredicate = () => TryFindSample(k_HandsPackageName, string.Empty, k_HandVisualizerSampleName, out var sample) && sample.isImported,
-                FixIt = () =>
-                {
-                    if (TryFindSample(k_HandsPackageName, string.Empty, k_HandVisualizerSampleName, out var sample))
+                    if (TryFindSample("com.unity.xr.hands", string.Empty, k_HandVisualizerSampleName, out var sample))
                     {
                         sample.Import(Sample.ImportOptions.OverridePreviousImports);
                     }
@@ -77,12 +60,12 @@ namespace UnityEditor.XR.Interaction.Toolkit.Samples.Hands
             },
             new BuildValidationRule
             {
-                Message = $"[{k_SampleDisplayName}] {k_StarterAssetsSampleName} sample from XR Interaction Toolkit ({k_XRIPackageName}) package must be imported or updated to use this sample.",
+                Message = $"[{k_SampleDisplayName}] {k_StarterAssetsSampleName} sample from XR Interaction Toolkit (com.unity.xr.interaction.toolkit) package must be imported or updated to use this sample.",
                 Category = k_Category,
-                CheckPredicate = () => TryFindSample(k_XRIPackageName, string.Empty, k_StarterAssetsSampleName, out var sample) && sample.isImported,
+                CheckPredicate = () => TryFindSample("com.unity.xr.interaction.toolkit", string.Empty, k_StarterAssetsSampleName, out var sample) && sample.isImported,
                 FixIt = () =>
                 {
-                    if (TryFindSample(k_XRIPackageName, string.Empty, k_StarterAssetsSampleName, out var sample))
+                    if (TryFindSample("com.unity.xr.interaction.toolkit", string.Empty, k_StarterAssetsSampleName, out var sample))
                     {
                         sample.Import(Sample.ImportOptions.OverridePreviousImports);
                     }
@@ -93,12 +76,12 @@ namespace UnityEditor.XR.Interaction.Toolkit.Samples.Hands
             new BuildValidationRule
             {
                 IsRuleEnabled = () => s_ShaderGraphPackageAddRequest == null || s_ShaderGraphPackageAddRequest.IsCompleted,
-                Message = $"[{k_SampleDisplayName}] Shader Graph ({k_ShaderGraphPackageName}) package must be installed for materials used in this sample.",
+                Message = $"[{k_SampleDisplayName}] Shader Graph (com.unity.shadergraph) package must be installed for materials used in this sample.",
                 Category = k_Category,
-                CheckPredicate = () => PackageVersionUtility.IsPackageInstalled(k_ShaderGraphPackageName),
+                CheckPredicate = () => PackageVersionUtility.IsPackageInstalled("com.unity.shadergraph"),
                 FixIt = () =>
                 {
-                    s_ShaderGraphPackageAddRequest = Client.Add(k_ShaderGraphPackageName);
+                    s_ShaderGraphPackageAddRequest = Client.Add("com.unity.shadergraph");
                     if (s_ShaderGraphPackageAddRequest.Error != null)
                     {
                         Debug.LogError($"Package installation error: {s_ShaderGraphPackageAddRequest.Error}: {s_ShaderGraphPackageAddRequest.Error.message}");
@@ -119,54 +102,16 @@ namespace UnityEditor.XR.Interaction.Toolkit.Samples.Hands
             {
                 BuildValidator.AddRules(buildTargetGroup, s_BuildValidationRules);
             }
-
-            // Delay evaluating conditions for issues to give time for Package Manager and UPM cache to fully initialize.
-            EditorApplication.delayCall += ShowWindowIfIssuesExist;
-        }
-
-        static void ShowWindowIfIssuesExist()
-        {
-            foreach (var validation in s_BuildValidationRules)
-            {
-                if (validation.CheckPredicate == null || !validation.CheckPredicate.Invoke())
-                {
-                    ShowWindow();
-                    return;
-                }
-            }
-        }
-
-        internal static void ShowWindow()
-        {
-            // Delay opening the window since sometimes other settings in the player settings provider redirect to the
-            // project validation window causing serialized objects to be nullified.
-            EditorApplication.delayCall += () =>
-            {
-                SettingsService.OpenProjectSettings(k_ProjectValidationSettingsPath);
-            };
         }
 
         static bool TryFindSample(string packageName, string packageVersion, string sampleDisplayName, out Sample sample)
         {
             sample = default;
 
-            if (!PackageVersionUtility.IsPackageInstalled(packageName))
-                return false;
-
-            IEnumerable<Sample> packageSamples;
-            try
-            {
-                packageSamples = Sample.FindByPackage(packageName, packageVersion);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Couldn't find samples of the {ToString(packageName, packageVersion)} package; aborting project validation rule. Exception: {e}");
-                return false;
-            }
-
+            var packageSamples = Sample.FindByPackage(packageName, packageVersion);
             if (packageSamples == null)
             {
-                Debug.LogWarning($"Couldn't find samples of the {ToString(packageName, packageVersion)} package; aborting project validation rule.");
+                Debug.LogError($"Couldn't find samples of the {ToString(packageName, packageVersion)} package; aborting project validation rule.");
                 return false;
             }
 
@@ -179,44 +124,13 @@ namespace UnityEditor.XR.Interaction.Toolkit.Samples.Hands
                 }
             }
 
-            Debug.LogWarning($"Couldn't find {sampleDisplayName} sample in the {ToString(packageName, packageVersion)} package; aborting project validation rule.");
+            Debug.LogError($"Couldn't find {sampleDisplayName} sample in the {ToString(packageName, packageVersion)} package; aborting project validation rule.");
             return false;
         }
 
         static string ToString(string packageName, string packageVersion)
         {
             return string.IsNullOrEmpty(packageVersion) ? packageName : $"{packageName}@{packageVersion}";
-        }
-
-        static void InstallOrUpdateHands()
-        {
-            // Set a 3-second timeout for request to avoid editor lockup
-            var currentTime = DateTime.Now;
-            var endTime = currentTime + TimeSpan.FromSeconds(3);
-
-            var request = Client.Search(k_HandsPackageName);
-            if (request.Status == StatusCode.InProgress)
-            {
-                Debug.Log($"Searching for ({k_HandsPackageName}) in Unity Package Registry.");
-                while (request.Status == StatusCode.InProgress && currentTime < endTime)
-                    currentTime = DateTime.Now;
-            }
-
-            var addRequest = k_HandsPackageName;
-            if (request.Status == StatusCode.Success && request.Result.Length > 0)
-            {
-                var versions = request.Result[0].versions;
-                var verifiedVersion = new PackageVersion(versions.recommended);
-                var latestCompatible = new PackageVersion(versions.latestCompatible);
-                if (verifiedVersion < s_RecommendedPackageVersion && s_RecommendedPackageVersion <= latestCompatible)
-                    addRequest = $"{k_HandsPackageName}@{s_RecommendedPackageVersion}";
-            }
-
-            s_HandsPackageAddRequest = Client.Add(addRequest);
-            if (s_HandsPackageAddRequest.Error != null)
-            {
-                Debug.LogError($"Package installation error: {s_HandsPackageAddRequest.Error}: {s_HandsPackageAddRequest.Error.message}");
-            }
         }
     }
 }
