@@ -1,9 +1,14 @@
 fileFormatVersion: 2
-guid: 4f82ce4c1e38b514f853f885c1e7026b
+guid: 920b0efe062076c48b482c92baf13a53
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: croissant_01_L1
+    second: {fileID: 2100000, guid: 840091ec899b02743a0aa50811b94536, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -67,7 +72,7 @@ ModelImporter:
     secondaryUVMinLightmapResolution: 40
     secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
-    useFileScale: 1
+    useFileScale: 0
     strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
